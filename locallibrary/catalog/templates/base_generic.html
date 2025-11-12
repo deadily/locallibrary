@@ -10,7 +10,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-    <!-- Добавление дополнительного статического CSS файла -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
   </head>
@@ -24,6 +23,13 @@
                 <li><a href="{% url 'index' %}">Home</a></li>
                 <li><a href="{% url 'books' %}">All books</a></li>
                 <li><a href="">All authors</a></li>
+            </ul>
+            {% if user.is_authenticated %}
+                <li>User: {{ user.get_username }}</li>
+                <li><a href="{% url 'logout'%}?next={{request.path}}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
+            {% endif %}
             </ul>
           {% endblock %}
         </div>
@@ -45,6 +51,7 @@
               </span>
             </div>
           {% endif %}
+
         {% endblock %}</div>
       </div>
     </div>

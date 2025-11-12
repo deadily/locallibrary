@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+from datetime import date
 
 class Genre(models.Model):
 
@@ -71,7 +73,13 @@ class BookInstance(models.Model):
         return status_dict.get(self.status, self.status)
 
     get_status_display_with_color.short_description = 'Status'
+    borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 class Author(models.Model):
 
     first_name = models.CharField(max_length=100)
