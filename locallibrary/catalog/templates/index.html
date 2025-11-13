@@ -9,13 +9,21 @@
 
   <p>The library has the following record counts:</p>
   <ul>
-    <li><strong>Books:</strong> {{ num_books }}</li>
-    <li><strong>Copies:</strong> {{ num_instances }}</li>
-    <li><strong>Copies available:</strong> {{ num_instances_available }}</li>
-    <li><strong>Authors:</strong> {{ num_authors }}</li>
+      <li><strong>Books:</strong> {{ num_books }}</li>
+      <li><strong>Copies:</strong> {{ num_instances }}</li>
+      <li><strong>Copies available:</strong> {{ num_instances_available }}</li>
+      <li><strong>Authors:</strong> {{ num_authors }}</li>
+      <li><strong>Genres:</strong> {{ num_genres }}</li>
   </ul>
 
-    <p>
-        You have visited this page {{ num_visits }}{% if num_visits == 1 %} time{% else %} times{% endif %}.
-    </p>
+  <h3>Books by keywords:</h3>
+  <ul>
+    {% for word, count in books_with_words.items %}
+        <li><strong>"{{ word }}":</strong> {{ count }} books</li>
+    {% endfor %}
+  </ul>
+
+  <p>
+      You have visited this page {{ num_visits }}{% if num_visits == 1 %} time{% else %} times{% endif %}.
+  </p>
 {% endblock %}
