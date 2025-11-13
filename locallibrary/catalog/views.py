@@ -1,7 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse, Http404
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.db.models import Q  # Добавляем импорт Q
 from django.views import generic
+from django.views.generic import CreateView, UpdateView, DeleteView
+
 from .models import Book, Author, BookInstance, Genre
 
 def index(request):
@@ -49,40 +51,86 @@ def index(request):
 
 class BookListView(generic.ListView):
     model = Book
-    paginate_by = 2
+    paginate_by = 10
 
 class BookDetailView(generic.DetailView):
     model = Book
 
-    def book_detail_view(request, pk):
-        try:
-            book_id = Book.objects.get(pk=pk)
-        except Book.DoesNotExist:
-            raise Http404("Book does not exist")
-
-        return render(
-            request,
-            'catalog/book_detail.html',
-            context={'book': book_id, }
-        )
 
 
 class AuthorDetailView(generic.DetailView):
     model = Author
-    paginate_by = 2
+    paginate_by = 10
 
 
 class AuthorListView(generic.ListView):
     model = Author
+    paginate_by = 10
 
-    def author_detail_view(request, pk):
-        try:
-            author_id = Author.objects.get(pk=pk)
-        except Author.DoesNotExist:
-            raise Http404("Author does not exist")
 
-        return render(
-            request,
-            'catalog/author_detail.html',
-            context={'author': author_id, }
-        )
+from django.contrib.auth.decorators import permission_required
+
+from django.urls import reverse, reverse_lazy
+import datetime
+
+from .forms import RenewBookForm
+
+@permission_required('catalog.can_mark_returned')
+def renew_book_librarian(request, pk):
+    """
+    View function for renewing a specific BookInstance by librarian
+    """
+    book_inst = get_object_or_404(BookInstance, pk=pk)
+
+    # If this is a POST request then process the Form data
+    if request.method == 'POST':
+
+        # Create a form instance and populate it with data from the request (binding):
+        form = RenewBookForm(request.POST)
+
+        # Check if the form is valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required (here we just write it to the model due_back field)
+            book_inst.due_back = form.cleaned_data['renewal_date']
+            book_inst.save()
+
+            # redirect to a new URL:
+            return HttpResponseRedirect(reverse('all-borrowed') )
+
+    # If this is a GET (or any other method) create the default form.
+    else:
+        proposed_renewal_date = datetime.date.today() + datetime.timedelta(weeks=3)
+        form = RenewBookForm(initial={'renewal_date': proposed_renewal_date,})
+
+    return render(request, 'catalog/book_renew_librarian.html', {'form': form, 'bookinst':book_inst})
+
+
+from django.contrib.auth.mixins import PermissionRequiredMixin
+
+
+class AllBorrowedBooksListView(PermissionRequiredMixin, generic.ListView):
+    """
+    Представление для отображения всех взятых книг, доступно только библиотекарям
+    с разрешением can_mark_returned
+    """
+    model = BookInstance
+    template_name = 'catalog/all_borrowed_books.html'
+    context_object_name = 'borrowed_books'
+    permission_required = 'catalog.can_mark_returned'
+
+    def get_queryset(self):
+        """Возвращаем только взятые книги (статус 'o' - on loan)"""
+        return BookInstance.objects.filter(status__exact='o').order_by('due_back')
+
+class AuthorCreate(CreateView):
+    model = Author
+    fields = '__all__'
+    initial={'date_of_death':'12/10/2016',}
+
+class AuthorUpdate(UpdateView):
+    model = Author
+    fields = ['first_name','last_name','date_of_birth','date_of_death']
+
+class AuthorDelete(DeleteView):
+    model = Author
+    success_url = reverse_lazy('authors')
