@@ -12,4 +12,7 @@ urlpatterns = [
     re_path(r'^author/create/$', views.AuthorCreate.as_view(), name='author-create'),
     re_path(r'^author/(?P<pk>\d+)/update/$', views.AuthorUpdate.as_view(), name='author-update'),
     re_path(r'^author/(?P<pk>\d+)/delete/$', views.AuthorDelete.as_view(), name='author-delete'),
+    re_path(r'^book/create/$', views.BookCreate.as_view(), name='book-create'),
+    re_path(r'^book/(?P<pk>\d+)/update/$', views.BookUpdate.as_view(), name='book-update'),
+    re_path(r'^book/(?P<pk>\d+)/delete/$', views.BookDelete.as_view(), name='book-delete'),
 ]

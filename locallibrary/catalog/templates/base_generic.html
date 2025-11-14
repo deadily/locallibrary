@@ -29,7 +29,10 @@
                 <li><strong>Staff</strong></li>
                 <li><a href="{% url 'all-borrowed' %}">All borrowed</a></li>
                 {% if perms.catalog.add_author %}
-                  <li><a href="{% url 'author-create' %}">Create author</a></li>
+                    <li><a href="{% url 'author-create' %}">Create author</a></li>
+                {% endif %}
+                {% if perms.catalog.add_book %}
+                    <li><a href="{% url 'book-create' %}">Create book</a></li>
                 {% endif %}
               {% endif %}
 
@@ -39,7 +42,7 @@
                 <li>
                   <form id="logout-form" method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-link" style="padding:0; border:none; background:none; color:#337ab7; text-decoration:underline;">Logout</button>
+                    <button type="submit" class="btn btn-link">Logout</button>
                   </form>
                 </li>
               {% else %}
